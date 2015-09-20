@@ -1,0 +1,59 @@
+#!/usr/bin/env php
+<?php
+
+if (!class_exists('Gruntfile')) {
+    $composerFound = false;
+
+    foreach (array(
+                 __DIR__.'/../../autoload.php',
+                 __DIR__.'/../vendor/autoload.php',
+                 __DIR__.'/vendor/autoload.php'
+             ) as $file) {
+        if (file_exists($file)) {
+            require_once $file;
+            $composerFound = true;
+            break;
+        }
+    }
+
+    if (!$composerFound) {
+        fwrite(STDERR, 'Unable to locate composer! Did you installed composer properly?');
+        exit(1);
+    }
+}
+
+cli_set_process_title('Gruntfile.js Generator');
+
+// Display help
+$help = (isset($argv) && is_array($argv) && in_array('--help', $argv));
+if ($help) {
+    echo implode(
+        PHP_EOL,
+        array(
+            'Usage: php gruntfile [OPTIONS] SOURCE'.PHP_EOL,
+            '   SOURCE          Location of your Gruntfile.js',
+            '   --no-color      Disable color output',
+            '   --help          Display this help',
+        )
+    );
+    exit(0);
+}
+
+// No color
+$noColor = (isset($argv) && is_array($argv) && in_array('--no-color', $argv));
+$file    = array_pop($argv);
+
+$gruntfile = new Gruntfile($file, !$noColor);
+$success   = $gruntfile->generate();
+
+if ($success) {
+    echo $gruntfile->colorGreen('File generation successful!'), PHP_EOL, PHP_EOL;
+
+    echo 'Diff:', PHP_EOL;
+    echo $gruntfile->showDiff();
+    exit(0);
+}
+else {
+    echo $gruntfile->colorRed('File generation failed!'), PHP_EOL;
+    exit(1);
+}
