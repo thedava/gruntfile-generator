@@ -3,12 +3,13 @@
 
 if (!class_exists('Gruntfile')) {
     $composerFound = false;
+    $autoloadFiles = array(
+        __DIR__.'/../../autoload.php',
+        __DIR__.'/../vendor/autoload.php',
+        __DIR__.'/vendor/autoload.php'
+    );
 
-    foreach (array(
-                 __DIR__.'/../../autoload.php',
-                 __DIR__.'/../vendor/autoload.php',
-                 __DIR__.'/vendor/autoload.php'
-             ) as $file) {
+    foreach ($autoloadFiles as $file) {
         if (file_exists($file)) {
             require_once $file;
             $composerFound = true;
@@ -24,33 +25,104 @@ if (!class_exists('Gruntfile')) {
 
 cli_set_process_title('Gruntfile.js Generator');
 
+// Parse console arguments in $_GET var - http://php.net/manual/en/features.commandline.php#108883
+parse_str(implode('&', array_slice($argv, 1)), $_GET);
+
+// Expected arguments
+$arguments = array(
+    '--help'      => false,
+    '--no-color'  => false,
+    '--display-command'  => false,
+    '--config'    => null,
+    '--gruntfile' => null,
+);
+foreach ($arguments as $argument => $value) {
+    if (!isset($_GET[$argument])) {
+        $_GET[$argument] = $value;
+    }
+}
+
 // Display help
-$help = (isset($argv) && is_array($argv) && in_array('--help', $argv));
-if ($help) {
+if ($_GET['--help']) {
     echo implode(
         PHP_EOL,
         array(
-            'Usage: php gruntfile [OPTIONS] SOURCE'.PHP_EOL,
-            '   SOURCE          Location of your Gruntfile.js',
-            '   --no-color      Disable color output',
-            '   --help          Display this help',
+            'Usage: php gruntfile [OPTIONS]'.PHP_EOL,
+            '   --config=CONFIG     Location of your PHP config file',
+            '   --gruntfile=FILE    Location of your Gruntfile.js',
+            '   --no-color          Disable color output',
+            '   --display-command   Display the command to call this file again',
+            '   --help              Display this help',
         )
     );
     exit(0);
 }
 
-// No color
-$noColor = (isset($argv) && is_array($argv) && in_array('--no-color', $argv));
-$file    = array_pop($argv);
+// Define readline
+if (!function_exists('readline')) {
+    /**
+     * Reads a line
+     *
+     * @link http://php.net/manual/en/function.readline.php
+     *
+     * @param string $prompt You may specify a string with which to prompt the user.
+     *
+     * @return string a single string from the user. The line returned has the ending newline removed.
+     */
+    function readline($prompt = '') {
+        echo $prompt;
+        return fgets(STDIN);
+    }
+}
 
-$gruntfile = new Gruntfile($file, !$noColor);
-$success   = $gruntfile->generate();
+// Load config file
+if (empty($_GET['--config'])) {
+    do {
+        $file = readline('Location of your config file: ');
 
+        $fileExists = file_exists($file);
+        if (!$fileExists) {
+            echo ' >> File does not exist!', PHP_EOL;
+        }
+    } while (!$fileExists);
+    $_GET['--config'] = $file;
+}
+
+// Load gruntfile
+if (empty($_GET['--gruntfile'])) {
+    do {
+        $file = readline('Location of your Gruntfile.js: ');
+
+        $fileExists = file_exists($file);
+        if (!$fileExists) {
+            echo ' >> File does not exist!', PHP_EOL;
+        }
+    } while (!$fileExists);
+    $_GET['--gruntfile'] = $file;
+}
+
+// Try to generate Gruntfile
+$gruntfile = new Gruntfile($_GET['--gruntfile'], !$_GET['--no-color']);
+try {
+    $success = $gruntfile->generate($_GET['--config']);
+}
+catch (Exception $error) {
+    echo $gruntfile->colorRed($error->getMessage()), PHP_EOL;
+    exit($error->getCode());
+}
+
+// Output results
 if ($success) {
     echo $gruntfile->colorGreen('File generation successful!'), PHP_EOL, PHP_EOL;
 
     echo 'Diff:', PHP_EOL;
     echo $gruntfile->showDiff();
+
+    if ($_GET['--display-command']) {
+        echo PHP_EOL, PHP_EOL;
+        echo 'Command: php ', $argv[0], ' --config=', $_GET['--config'], ' --gruntfile=', $_GET['--gruntfile'], PHP_EOL;
+    }
+
     exit(0);
 }
 else {

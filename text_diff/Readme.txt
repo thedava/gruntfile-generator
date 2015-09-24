@@ -1,0 +1,1 @@
+This folder will be REMOVED after Text_Diff has finally released the composer changes

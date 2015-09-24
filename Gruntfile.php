@@ -3,7 +3,7 @@
 /**
  * This class generates a Gruntfile.js from PHP configs
  *
- * @author thedava
+ * @author  thedava
  * @package gruntfile-generator
  */
 class Gruntfile {
@@ -54,7 +54,7 @@ class Gruntfile {
      * @param bool   $showColor
      */
     public function __construct($gruntfilePath, $showColor = true) {
-    	$this->gruntfilePath = $gruntfilePath;
+        $this->gruntfilePath       = $gruntfilePath;
         $this->oldGruntfileContent = $this->loadGruntfile();
 
         if ($showColor) {
@@ -127,7 +127,8 @@ class Gruntfile {
             if (strlen($line) > 0) {
                 if ($line[0] == '+') {
                     $line = $this->colorGreen($line);
-                } elseif($line[0] == '-') {
+                }
+                elseif ($line[0] == '-') {
                     $line = $this->colorRed($line);
                 }
             }
@@ -139,26 +140,39 @@ class Gruntfile {
     }
 
     /**
-     * This method replaces the default mustache escaping
+     * Returns the given config file as validated array
      *
-     * @param string $str
+     * @param string $configFilePath
      *
-     * @return string
+     * @return array
+     * @throws Exception
      */
-    private function escapeMustache($str) {
-        return $str;
-    }
+    protected function parseConfigs($configFilePath) {
+        $config = include $configFilePath;
+        if (!is_array($config)) {
+            throw new Exception('The config file must return an array!', E_USER_ERROR);
+        }
 
-    protected function getImports(){
+        $imports = [];
+        if (isset($config[static::CONFIG_IMPORTS]) && is_array($config[static::CONFIG_IMPORTS])) {
+            $imports = $config[static::CONFIG_IMPORTS];
+        }
 
-    }
+        $tasks = [];
+        if (isset($config[static::CONFIG_TASKS]) && is_array($config[static::CONFIG_TASKS])) {
+            $tasks = $config[static::CONFIG_TASKS];
+        }
 
-    protected function getTargetConfig() {
+        $targets = [];
+        if (isset($config[static::CONFIG_TARGETS]) && is_array($config[static::CONFIG_TARGETS])) {
+            $targets = $config[static::CONFIG_TARGETS];
+        }
 
-    }
-
-    protected function getTasks() {
-
+        return [
+            static::CONFIG_IMPORTS => $imports,
+            static::CONFIG_TASKS   => $tasks,
+            static::CONFIG_TARGETS => $targets,
+        ];
     }
 
     /**
@@ -170,13 +184,84 @@ class Gruntfile {
      */
     protected function getGeneratedGruntfile(array $targetConfig, array $imports, array $taskConfig) {
         $template = file_get_contents(__DIR__.'/assets/Gruntfile.js.mustache');
-        $mustache = new Mustache_Engine(array('escape' => [$this, 'escapeMustache']));
+        $mustache = new Mustache_Engine(
+            array(
+                'escape' => function ($str) {
+                    // No escaping
+                    return $str;
+                }
+            )
+        );
+
+        $tasks = [];
+        foreach ($taskConfig as $taskName => $taskCommands) {
+            $tasks[] = array(
+                'task_name'     => $taskName,
+                'task_commands' => json_encode($taskCommands),
+            );
+        }
+
+        if (defined('JSON_PRETTY_PRINT')) {
+            $options = JSON_PRETTY_PRINT;
+        }
+
         $vars = array(
-            'imports' => $imports,
-            'target_config' => $targetConfig,
-            'tasks' => $taskConfig,
+            'imports'       => $imports,
+            'target_config' => json_encode($targetConfig, $options),
+            'tasks'         => $tasks,
         );
 
         return $mustache->render($template, $vars);
+    }
+
+    /**
+     * Generates a Gruntfile from the given config
+     *
+     * @param string $configFilePath
+     *
+     * @return bool
+     * @throws Exception
+     */
+    public function generate($configFilePath) {
+        $config = $this->parseConfigs($configFilePath);
+
+        $gruntfile = $this->getGeneratedGruntfile(
+            $config[static::CONFIG_TARGETS],
+            $config[static::CONFIG_IMPORTS],
+            $config[static::CONFIG_TASKS]
+        );
+
+        return file_put_contents($this->gruntfilePath, $gruntfile) !== false;
+    }
+
+    /**
+     * Merges the given files or configs into a single config
+     *
+     * @param array $configFiles Either a list of file paths or a list of configs (as array)
+     *
+     * @return array
+     * @throws Exception
+     */
+    public static function mergeConfigs(array $configFiles) {
+        $gruntConfig = array(
+            static::CONFIG_TASKS   => [],
+            static::CONFIG_TARGETS => [],
+            static::CONFIG_IMPORTS => [],
+        );
+        foreach ($configFiles as $file) {
+            if (is_array($file)) {
+                $config = $file;
+            }
+            else {
+                $config = include $file;
+                if (!is_array($config)) {
+                    throw new Exception('The given config file did not return an array! File: '.$file, E_USER_ERROR);
+                }
+            }
+
+            $gruntConfig = array_merge_recursive($gruntConfig, $config);
+        }
+
+        return $gruntConfig;
     }
 }
