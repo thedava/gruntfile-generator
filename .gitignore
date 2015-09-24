@@ -4,3 +4,4 @@
 # Composer
 *.phar
 vendor/
+composer.lock
