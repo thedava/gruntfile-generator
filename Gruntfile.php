@@ -40,7 +40,7 @@ class Gruntfile {
      *
      * @var array
      */
-    protected $oldGruntfileContent = [];
+    protected $oldGruntfileContent = array();
 
     /**
      * @var Console_Color2
@@ -68,7 +68,7 @@ class Gruntfile {
      * @return array
      */
     protected function loadGruntfile() {
-        return (file_exists($this->gruntfilePath)) ? file($this->gruntfilePath) : [];
+        return (file_exists($this->gruntfilePath)) ? file($this->gruntfilePath) : array();
     }
 
     /**
@@ -120,7 +120,7 @@ class Gruntfile {
         $diff     = new Text_Diff('auto', [$this->oldGruntfileContent, $currentGruntfileContent]);
         $renderer = new Text_Diff_Renderer_unified();
 
-        $content = [];
+        $content = array();
         foreach (explode("\n", $renderer->render($diff)) as $line) {
             $line = rtrim($line);
 
@@ -153,17 +153,17 @@ class Gruntfile {
             throw new Exception('The config file must return an array!', E_USER_ERROR);
         }
 
-        $imports = [];
+        $imports = array();
         if (isset($config[static::CONFIG_IMPORTS]) && is_array($config[static::CONFIG_IMPORTS])) {
             $imports = $config[static::CONFIG_IMPORTS];
         }
 
-        $tasks = [];
+        $tasks = array();
         if (isset($config[static::CONFIG_TASKS]) && is_array($config[static::CONFIG_TASKS])) {
             $tasks = $config[static::CONFIG_TASKS];
         }
 
-        $targets = [];
+        $targets = array();
         if (isset($config[static::CONFIG_TARGETS]) && is_array($config[static::CONFIG_TARGETS])) {
             $targets = $config[static::CONFIG_TARGETS];
         }
@@ -193,7 +193,7 @@ class Gruntfile {
             )
         );
 
-        $tasks = [];
+        $tasks = array();
         foreach ($taskConfig as $taskName => $taskCommands) {
             $tasks[] = array(
                 'task_name'     => $taskName,
@@ -244,9 +244,9 @@ class Gruntfile {
      */
     public static function mergeConfigs(array $configFiles) {
         $gruntConfig = array(
-            static::CONFIG_TASKS   => [],
-            static::CONFIG_TARGETS => [],
-            static::CONFIG_IMPORTS => [],
+            static::CONFIG_TASKS   => array(),
+            static::CONFIG_TARGETS => array(),
+            static::CONFIG_IMPORTS => array(),
         );
         foreach ($configFiles as $file) {
             if (is_array($file)) {
