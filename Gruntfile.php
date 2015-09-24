@@ -117,7 +117,7 @@ class Gruntfile {
     public function showDiff() {
         $currentGruntfileContent = $this->loadGruntfile();
 
-        $diff     = new Text_Diff('auto', [$this->oldGruntfileContent, $currentGruntfileContent]);
+        $diff     = new Text_Diff('auto', array($this->oldGruntfileContent, $currentGruntfileContent));
         $renderer = new Text_Diff_Renderer_unified();
 
         $content = array();
@@ -168,11 +168,11 @@ class Gruntfile {
             $targets = $config[static::CONFIG_TARGETS];
         }
 
-        return [
+        return array(
             static::CONFIG_IMPORTS => $imports,
             static::CONFIG_TASKS   => $tasks,
             static::CONFIG_TARGETS => $targets,
-        ];
+        );
     }
 
     /**
