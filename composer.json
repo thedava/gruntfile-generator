@@ -28,7 +28,11 @@
         "gruntfile"
     ],
     "require": {
+        "php": ">=5.3",
         "mustache/mustache": "^2.9",
         "pear/Console_Color2": "^0.1.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4"
     }
 }

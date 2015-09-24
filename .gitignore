@@ -1,7 +1,11 @@
 # IDE
 .idea
 
-# Composer
+# Composer (lock file is not required for libraries)
 *.phar
 vendor/
+bin/
 composer.lock
+
+# Testing
+test/environment/Gruntfile.js
