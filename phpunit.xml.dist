@@ -9,7 +9,7 @@
         >
     <testsuites>
         <testsuite name="gruntfile-generator">
-            <directory>./test/phpunit/*</directory>
+            <directory>./test/phpunit/</directory>
         </testsuite>
     </testsuites>
 </phpunit>
