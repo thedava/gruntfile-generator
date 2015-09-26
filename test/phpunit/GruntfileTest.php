@@ -121,4 +121,24 @@ class GruntfileTest extends PHPUnit_Framework_TestCase {
             $this->assertEquals($expectedResult, $result);
         }
     }
+
+    public function testShowDiff() {
+        $this->markTestIncomplete('Implement test for showDiff');
+    }
+
+    public function testParseConfigs() {
+        $this->markTestIncomplete('Implement test for parseConfigs');
+    }
+
+    public function testGetGeneratedGruntfile() {
+        $this->markTestIncomplete('Implement test for getGeneratedGruntfile');
+    }
+
+    public function testGenerate() {
+        $this->markTestIncomplete('Implement test for generate');
+    }
+
+    public function testMergeConfigs() {
+        $this->markTestIncomplete('Implement test for mergeConfigs');
+    }
 }
