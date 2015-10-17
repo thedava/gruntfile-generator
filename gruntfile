@@ -5,7 +5,6 @@ if (!class_exists('Gruntfile')) {
     $composerFound = false;
     $autoloadFiles = array(
         __DIR__.'/../../autoload.php',
-        __DIR__.'/../vendor/autoload.php',
         __DIR__.'/vendor/autoload.php'
     );
 
@@ -23,18 +22,20 @@ if (!class_exists('Gruntfile')) {
     }
 }
 
-cli_set_process_title('Gruntfile.js Generator');
+if (function_exists('cli_set_process_title')) {
+    cli_set_process_title('Gruntfile.js Generator');
+}
 
 // Parse console arguments in $_GET var - http://php.net/manual/en/features.commandline.php#108883
 parse_str(implode('&', array_slice($argv, 1)), $_GET);
 
 // Expected arguments
 $arguments = array(
-    '--help'      => false,
-    '--no-color'  => false,
+    '--help'             => false,
+    '--no-color'         => false,
     '--display-command'  => false,
-    '--config'    => null,
-    '--gruntfile' => null,
+    '--config'           => null,
+    '--gruntfile'        => null,
 );
 foreach ($arguments as $argument => $value) {
     if (!isset($_GET[$argument])) {

@@ -6,30 +6,45 @@
 
 module.exports = function(grunt) {
     grunt.initConfig({
-    "test": {
+    "random": {
         "target": {
-            "do": "something",
-            "random": 647023066
+            "random": 1400680994
+        }
+    },
+    "test1": {
+        "target": {
+            "do": "something"
         }
     },
     "test2": {
         "target1": {
-            "do": "something too",
-            "time": 1443128650
+            "do": "something too"
         },
         "target2": {
-            "do": "even more",
-            "unique": "5604654a64461"
+            "do": "even more"
+        }
+    },
+    "test3": {
+        "target": {
+            "do": "something"
+        }
+    },
+    "test4": {
+        "target": {
+            "do": "something"
         }
     }
 });
 
     // imports
+    grunt.loadNpmTasks('import5605659a7b817');
     grunt.loadNpmTasks('import1');
     grunt.loadNpmTasks('import2');
-    grunt.loadNpmTasks('import5604654a64461');
+    grunt.loadNpmTasks('import3');
+    grunt.loadNpmTasks('import4');
 
     // tasks
-    grunt.registerTask('testTask', ["test:target","test2:target1","test2:target2"]);
-    grunt.registerTask('randomTask', ["random:_5604654a64461"]);
+    grunt.registerTask('randomTask', ["random:_5605659a7b817"]);
+    grunt.registerTask('testTask', ["test1:target","test2:target1","test2:target2"]);
+    grunt.registerTask('testTask2', ["test3:target","test4:target"]);
 };
